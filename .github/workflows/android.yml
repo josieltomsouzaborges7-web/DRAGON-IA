@@ -8,31 +8,38 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+
     steps:
-      - name: Checkout
+      - name: Baixar projeto
         uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Configurar Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
 
-      - name: Setup Gradle
+      - name: Configurar Android SDK
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Configurar Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.9"
 
-      - name: Extract project
-        run: |
-          unzip -q DRAGON_AI_Android_Starter.zip -d extracted
+      - name: Extrair projeto
+        run: unzip -q DRAGON_AI_Android_Starter.zip -d extracted
 
-      - name: Build APK
-        run: |
-          gradle -p extracted/DRAGON_AI_Android_Starter assembleDebug
+      - name: Compilar aplicativo
+        run: gradle -p extracted/DRAGON_AI_Android_Starter assembleDebug
 
-      - name: Upload APK
+      - name: Disponibilizar APK
         uses: actions/upload-artifact@v4
         with:
           name: DRAGON-APK
           path: extracted/DRAGON_AI_Android_Starter/app/build/outputs/apk/debug/app-debug.apk
+          
